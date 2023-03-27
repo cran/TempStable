@@ -2,7 +2,7 @@ Package: TempStable
 Type: Package
 Title: A Collection of Methods to Estimate Parameters of Different
         Tempered Stable Distributions
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c( person(given = "Till", family = "Massing",
                      email = "till.massing@uni-due.de",
                      role = "aut"),
@@ -32,19 +32,19 @@ Description:
 URL: https://cedricjuessen.github.io/TempStable/
 License: GPL (>= 2)
 Encoding: UTF-8
-Imports: doParallel (>= 1.0.17), foreach (>= 1.5.2), methods (>=
-        4.1.2), moments (>= 0.14.1), numDeriv (>= 2016.8-1.1),
-        stabledist (>= 0.7-1), StableEstim (>= 2.1), rootSolve (>=
-        1.8.2.3), VGAM (>= 1.1-7)
+Depends: R (>= 4.2), methods
+Imports: doParallel (>= 1.0.12), foreach (>= 1.5.0), moments (>= 0.14),
+        numDeriv (>= 2016.8-1), stabledist (>= 0.7-1), StableEstim (>=
+        2.1), rootSolve (>= 1.8), VGAM (>= 1.1-7)
 RoxygenNote: 7.2.3
-Suggests: knitr (>= 1.4), rmarkdown (>= 2.17), testthat (>= 3.1.5), V8
-        (>= 4.2.2)
+Suggests: knitr (>= 1.4), rmarkdown (>= 2.17), testthat (>= 3.1), V8
+        (>= 4.2)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2023-03-17 08:40:23 UTC; Cedric
+Packaged: 2023-03-24 15:03:30 UTC; cedric.juessen
 Author: Till Massing [aut],
   Cedric Maximilian Juessen [cre]
 Maintainer: Cedric Maximilian Juessen <cedric.juessen@vwl.uni-due.de>
 Repository: CRAN
-Date/Publication: 2023-03-17 17:30:04 UTC
+Date/Publication: 2023-03-27 08:40:06 UTC

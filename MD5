@@ -1,6 +1,6 @@
-400d502527f1244850da9904dbd67361 *DESCRIPTION
+66426c7bd85f7b67b315d515ab117452 *DESCRIPTION
 90d04011d2715862f0591f6b857c8128 *NAMESPACE
-7a1cb3f5663a3d86139d4c3cfb366639 *NEWS.md
+0b7d7505106d4bfc0f8e57c792a85f60 *NEWS.md
 d5aed5b9b5168b7dce30e316b78e4623 *R/CGMM_CGMY.R
 78912a41d329982f74526025f3814d9f *R/CGMM_CTS.R
 101ef7b90f27da48d535bf21c80f9be9 *R/CGMM_NTS.R
@@ -28,12 +28,12 @@ c8e2ce97705beee3f6a3c4521f5e9fee *R/MonteCarloFunction.R
 a28bc58e862df16ee52de93fbf7ac314 *R/asympVarianceEstim_NTS.R
 12a8ff4b8a8153ed4df849c3ea73333f *R/asympVarianceEstim_TSS.R
 90e985a28ac185743aaceaf1afaa3e51 *R/basicfcts_TS.R
-b4bbd80f07ff83b95679fdb4744abec0 *README.md
-afbe4209b3bb961ba3e41cbfe79ea507 *build/partial.rdb
-c32019619d4c404e0b042ec8bcddfb3f *build/vignette.rds
+5f622bcdeb431448adbcb93e520d6a32 *README.md
+cdbdb705c017565f8d24cdc91a0e6ec8 *build/partial.rdb
+e7fa12476c1bc7deb136da8ac6a84ca5 *build/vignette.rds
 070d5747d302f77cca17df934112ab2a *inst/doc/my-vignette.R
 abe3d1dd2dd48a73884dc7c6b57633c0 *inst/doc/my-vignette.Rmd
-b821d2da5f645027b869d5e3eefa2d55 *inst/doc/my-vignette.html
+92c1aa4f5abc3a51b4303aa468604c92 *inst/doc/my-vignette.html
 7df3870bef3ea82bd4206f972e1d69b6 *inst/logo/logo.R
 ac9745b01408afac6bf2a779685b1bef *man/TempStable.Rd
 17c30a670d185c2299eb08a2e6c12d49 *man/TemperedEstim.Rd
@@ -56,7 +56,7 @@ a145a37b1a42b190cf64c4b58ada7d39 *man/rCTS.Rd
 9fe07435498d7a71f77009cc58ae4698 *man/rNTS.Rd
 c15e89914fd7a37ba3120400964299eb *man/rTSS.Rd
 412c84fa1a9194cabeb1e9bc8acc88cd *tests/testthat.R
-392d81179938548c0c94afe117b1efce *tests/testthat/test_MasterEstim.R
+94d236a6cd458fe9efa19e52bac68706 *tests/testthat/test_MasterEstim.R
 7e022d8b2fcd7bc2e741f8459920ce7b *tests/testthat/test_MonteCarloFunction.R
 4ca90bf64e4b3961d924b5b158b74646 *tests/testthat/test_MonteCarloFunctionDifAlgo.R
 d1675d97aa5d9c924035cb24c2235a61 *tests/testthat/test_basicfcts_ts.R
