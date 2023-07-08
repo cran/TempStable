@@ -8,7 +8,7 @@ TemperedEstim_Simulation(
   ParameterMatrix,
   SampleSizes = c(200, 1600),
   MCparam = 100,
-  TemperedType = c("Classic", "Subordinator", "Normal"),
+  TemperedType = c("CTS", "TSS", "NTS", "MTS", "GTS", "KRTS", "RDTS"),
   Estimfct = c("ML", "GMM", "Cgmm", "GMC"),
   HandleError = TRUE,
   saveOutput = FALSE,
@@ -20,6 +20,7 @@ TemperedEstim_Simulation(
   t_scheme = NULL,
   alphaReg = NULL,
   t_free = NULL,
+  nb_t = NULL,
   subdivisions = NULL,
   IntegrationMethod = NULL,
   randomIntegrationLaw = NULL,
@@ -27,7 +28,7 @@ TemperedEstim_Simulation(
   s_max = NULL,
   ncond = NULL,
   IterationControl = NULL,
-  methodR = "AR",
+  methodR = "TM",
   ...
 )
 }
@@ -42,7 +43,8 @@ vector of integer.}
 \item{MCparam}{Number of Monte Carlo simulation for each couple of parameter,
 default=100; integer}
 
-\item{TemperedType}{A String. Either "Classic", "Subordinator", or "Normal".}
+\item{TemperedType}{A String. Either "CTS", "TSS", "NTS", "MTS", "GTS",
+"KRTS", "RDTS".}
 
 \item{Estimfct}{The estimation function to be used. A String.
 Either "ML", "GMM", "Cgmm", or "GMC".}
@@ -65,33 +67,38 @@ continuous updated and the iterative GMM proposed by Hansen, Eaton et Yaron
 (1996) and adapted to the continuum case. For GMC: \code{"2SGMC", "CueGMC"}.
 For Cgmm: \code{"2SCgmm", "CueCgmm", ...}.}
 
-\item{regularization}{regularization scheme to be used for moment methods, one of
-\code{"Tikhonov"} (Tikhonov), \code{"LF"} (Landweber-Fridmann) and
+\item{regularization}{regularization scheme to be used for moment methods,
+one of \code{"Tikhonov"} (Tikhonov), \code{"LF"} (Landweber-Fridmann) and
 \code{"cut-off"} (spectral cut-off).}
 
 \item{WeightingMatrix}{type of weighting matrix used to compute the
-objective function for the GMM and GMC methods, one of \code{"OptAsym"} (the optimal asymptotic),
-\code{"DataVar"} (the data driven, only for GMM) and \code{"Id"} (the identity matrix).}
+objective function for the GMM and GMC methods, one of \code{"OptAsym"} (the
+optimal asymptotic), \code{"DataVar"} (the data driven, only for GMM) and
+\code{"Id"} (the identity matrix).}
 
-\item{t_scheme}{scheme used to select the points for the GMM method where the moment conditions
-are evaluated, one of \code{"equally"} (equally placed), \code{"NonOptAr"}
-(non optimal arithmetic placement), \code{"uniformOpt"}
-(uniform optimal placement), \code{"ArithOpt"} (arithmetic optimal
-placement), \code{"Var Opt"} (optimal variance placement) and \code{"free"}
-(users need to pass their own set of points in ...).}
+\item{t_scheme}{scheme used to select the points for the GMM method where the
+moment conditions are evaluated, one of \code{"equally"} (equally placed),
+\code{"NonOptAr"} (non optimal arithmetic placement), \code{"uniformOpt"}
+(uniform optimal placement), \code{"ArithOpt"} (arithmetic optimal placement)
+, \code{"Var Opt"} (optimal variance placement) and \code{"free"} (users need
+to pass their own set of points in ...).}
 
-\item{alphaReg}{value of the regularisation parameter; numeric. Example Value could be ==0.01.}
+\item{alphaReg}{value of the regularisation parameter; numeric. Example Value
+could be ==0.01.}
 
 \item{t_free}{sequence, if \code{t_scheme=="free"}.}
 
+\item{nb_t}{integer, if you set \code{t_scheme <- "equally"}. nb_t could be
+== 20 for example.}
+
 \item{subdivisions}{Number of subdivisions used to compute the different
-integrals involved in the computation of the objective function for the Cgmm method (to
-minimise); numeric.}
+integrals involved in the computation of the objective function for the Cgmm
+method (to minimise); numeric.}
 
 \item{IntegrationMethod}{Numerical integration method to be used to
-approximate the (vectorial) integrals for the Cgmm method. Users can choose between "Uniform"
-discretization or the "Simpson"'s rule (the 3-point Newton-Cotes quadrature
-rule).}
+approximate the (vectorial) integrals for the Cgmm method. Users can choose
+between "Uniform" discretization or the "Simpson"'s rule (the 3-point
+Newton-Cotes quadrature rule).}
 
 \item{randomIntegrationLaw}{Probability measure associated to the Hilbert
 space spanned by the moment conditions for the Cgmm method.}
@@ -99,13 +106,15 @@ space spanned by the moment conditions for the Cgmm method.}
 \item{s_min, s_max}{Lower and Upper bounds of the interval where the moment
 conditions are considered for the Cgmm method; numeric.}
 
-\item{ncond}{Integer. Number of moment conditions (until order \code{ncond}) for the GMC method.
-Must not be less than 3 for TSS, 6 for CTS, 5 for NTS.}
+\item{ncond}{Integer. Number of moment conditions (until order \code{ncond})
+for the GMC method. Must not be less than 3 for TSS, 6 for CTS, 5 for NTS.}
 
 \item{IterationControl}{only used if algo = "IT..." or algo = "Cue..."
 to control the iterations. See Details.}
 
-\item{methodR}{A string. It selects the method in rCTS/rNTS/rTSS. "AR" by default.}
+\item{methodR}{A string. Method generates random variates of TS distribution.
+"TM" by default. Switches automatically if the method is not applicable in
+this way.}
 
 \item{...}{Other arguments to be passed to the estimation function.}
 }
@@ -119,6 +128,25 @@ Runs Monte Carlo simulation for a selected estimation method. The function
 can save results in a file.
 }
 \details{
+\strong{TemperedTyp} With the parameter 'TemperedTyp' you can choose the
+tempered stable distribution you want to use. Here is a list of distribution
+you can choose from:
+\describe{
+\item{TSS}{Tempered stabel subordinator: See \code{\link[=charTSS]{charTSS()}} for details.}
+\item{CTS}{Classical tempered stable distribution: See \code{\link[=charCTS]{charCTS()}} for
+details.}
+\item{GTS}{Generalized classical tempered stable distribution: See
+\code{\link[=charGTS]{charGTS()}} for details.}
+\item{NTS}{Normal tempered stable distribution: See \code{\link[=charNTS]{charNTS()}} for
+details.}
+\item{MTS}{Modified tempered stable distribution: See \code{\link[=charMTS]{charMTS()}} for
+details.}
+\item{RDTS}{Rapid decreasing tempered stable distribution: See \code{\link[=charRDTS]{charRDTS()}}
+for details.}
+\item{KRTS}{Kim-Rachev tempered stable distribution: See \code{\link[=charKRTS]{charKRTS()}} for
+details.}
+}
+
 \strong{Error Handling} It is advisable to set it to TRUE when user is
 planning to launch long simulations as it will prevent the procedure to stop
 if an error occurs for one sample data. The estimation function will produce
@@ -217,10 +245,19 @@ consecutive estimation steps is smaller than RelativeErrMax;
 default = 1e-3.}
 }
 
+\strong{methodR} Random numbers must be generated for each MC study. For
+each distribution, different methods are available for this (partly also
+depending on alpha). For more information, the documentation of the
+respective \code{r...()} distribution can be called up. By default, the fastest
+method is selected. Since the deviation error can amplify to the edges of
+alpha depending on the method, it is recommended to check the generated
+random numbers once for each distribution using the density function before
+starting the simulation.
+
 \strong{Parallelization}  Parallelization of the function is possible with
 using \code{\link[=parallelizeMCsimulation]{parallelizeMCsimulation()}}. If someone wants to parallelize the
-function manually, the parameter \code{MCparam} must be set to \code{1} and the
-parameter \code{SeedOption} must be changed for each iteration.
+function manually, the parameter \code{MCparam} must be set to \code{1} and
+the parameter \code{SeedOption} must be changed for each iteration.
 
 Since this package is structurally based on the \strong{"StableEstim"
 package by Tarak Kharrat and Georgi N. Boshnakov}, more detailed
@@ -231,12 +268,12 @@ documentation can be found in their documentation.
 TemperedEstim_Simulation(ParameterMatrix = rbind(c(1.5,1,1,1,1,0),
                                                  c(0.5,1,1,1,1,0)),
                          SampleSizes = c(4), MCparam = 4,
-                         TemperedType = "Classic", Estimfct = "ML",
+                         TemperedType = "CTS", Estimfct = "ML",
                          saveOutput = FALSE)
 
 TemperedEstim_Simulation(ParameterMatrix = rbind(c(1.5,1,1,1,1,0)),
                          SampleSizes = c(4), MCparam = 4,
-                         TemperedType = "Classic", Estimfct = "GMM",
+                         TemperedType = "CTS", Estimfct = "GMM",
                          saveOutput = FALSE, algo = "2SGMM",
                          regularization = "cut-off",
                          WeightingMatrix = "OptAsym", t_scheme = "free",
@@ -245,7 +282,7 @@ TemperedEstim_Simulation(ParameterMatrix = rbind(c(1.5,1,1,1,1,0)),
 
 TemperedEstim_Simulation(ParameterMatrix = rbind(c(1.45,0.55,1,1,1,0)),
                          SampleSizes = c(4), MCparam = 4,
-                         TemperedType = "Classic", Estimfct = "Cgmm",
+                         TemperedType = "CTS", Estimfct = "Cgmm",
                          saveOutput = FALSE, algo = "2SCgmm",
                          alphaReg = 0.01, subdivisions = 50,
                          IntegrationMethod = "Uniform",
@@ -254,7 +291,7 @@ TemperedEstim_Simulation(ParameterMatrix = rbind(c(1.45,0.55,1,1,1,0)),
 
 TemperedEstim_Simulation(ParameterMatrix = rbind(c(1.45,0.55,1,1,1,0)),
                          SampleSizes = c(4), MCparam = 4,
-                         TemperedType = "Classic", Estimfct = "GMC",
+                         TemperedType = "CTS", Estimfct = "GMC",
                          saveOutput = FALSE, algo = "2SGMC",
                          alphaReg = 0.01, WeightingMatrix = "OptAsym",
                          regularization = "cut-off", ncond = 8)

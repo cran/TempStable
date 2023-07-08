@@ -45,7 +45,7 @@ CgmmParametersEstim_NTS <- function(x, algo = c("2SCgmm", "ITCgmm", "CueCgmm"),
                                           ...)
     }, stop(paste(algo, " not taken into account for Cgmm procedure")))
     if (PrintTime) {
-        CallingFct <- paste("Normal", "CgmmParametersEstim", algo, sep = "_")
+        CallingFct <- paste("NTS", "CgmmParametersEstim", algo, sep = "_")
         StableEstim::PrintDuration(
           StableEstim::ComputeDuration(t_init, StableEstim::getTime_()),
           CallingFct)
@@ -356,8 +356,8 @@ ComputeCgmmFcts_NTS <- function(Fct = c("Objective", "Covariance"), theta,
                                     s_max = s_max,
                                     IntegrationMethod = IntegrationMethod,
                                     randomIntegrationLaw = randomIntegrationLaw,
-                                    subdivisions = subdivisions, ...)/(n - 6)
-        } else Cmat <- Cmat/(n - 6)
+                                    subdivisions = subdivisions, ...)/(n - 5)
+        } else Cmat <- Cmat/(n - 5)
         In <- diag(nrow = n, ncol = n)
         Cmat2 <- Cmat %*% Cmat
         matrixToInverse <- alphaReg * In + Cmat2

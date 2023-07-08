@@ -2,7 +2,7 @@
 % Please edit documentation in R/basicfcts_TS.R
 \name{dCTS}
 \alias{dCTS}
-\title{Density function of the classic tempered stable (CTS) distribution}
+\title{Density function of the classical tempered stable (CTS) distribution}
 \usage{
 dCTS(
   x,
@@ -16,7 +16,8 @@ dCTS(
   dens_method = "FFT",
   a = -20,
   b = 20,
-  nf = 2048
+  nf = 2048,
+  ...
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ by default.}
 
 \item{nf}{Pieces the transformation is divided in. Limited to power-of-two
 size. 2048 by default.}
+
+\item{...}{Possibility to modify \code{\link[=charCTS]{charCTS()}}.}
 }
 \value{
 As \code{x} is a numeric vector, the return value is also a numeric

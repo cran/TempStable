@@ -12,7 +12,8 @@ charCTS(
   lambdap = NULL,
   lambdam = NULL,
   mu = NULL,
-  theta = NULL
+  theta = NULL,
+  functionOrigin = "massing"
 )
 }
 \arguments{
@@ -31,9 +32,11 @@ charCTS(
 \item{mu}{A location parameter, any real number.}
 
 \item{theta}{Parameters stacked as a vector.}
+
+\item{functionOrigin}{A string. Either "massing", or "kim10".}
 }
 \value{
-The CF of the tempered stable subordinator distribution.
+The CF of the classical tempered stable distribution.
 }
 \description{
 Theoretical characteristic function (CF) of the classical tempered
@@ -42,7 +45,8 @@ stable distribution. See Kuechler & Tappe (2013) for details.
 \details{
 \code{theta} denotes the parameter vector \code{(alpha, deltap, deltam,
 lambdap, lambdam, mu)}. Either provide the parameters individually OR
-provide \code{theta}.
+provide \code{theta}. Characteristic function shown here is from Massing
+(2023).
 \deqn{\varphi_{CTS}(t;\theta):=
 E_{\theta}\left[
 \mathrm{e}^{\mathrm{i}tX}\right]=
@@ -53,6 +57,22 @@ E_{\theta}\left[
 \left((\lambda_-+\mathrm{i}t)^{\alpha}-\lambda_-^{\alpha}-\mathrm{i}t\alpha
 \lambda_-^{\alpha-1}\right)
 \right)}
+
+\strong{Origin of functions}
+Since the parameterisation can be different for this
+characteristic function in different approaches, the respective approach can
+be selected with \code{functionOrigin}. For the estimation function
+\code{TemperedEstim} and therefore also the Monte Carlo function
+\code{TemperedEstim_Simulation} and the calculation of the density function
+\code{dMTS} only the approach of Massing (2023) can be selected. If you want
+to use the approach of Kim et al. (2010) for these functions, you have to
+clone the package from GitHub and adapt the functions accordingly.
+\describe{
+\item{massing}{From Massing, T. (2023), 'Parametric Estimation of
+Tempered Stable Laws'.}
+\item{kim10}{From Kim et al. (2010) 'Tempered stable
+and tempered infinitely divisible GARCH models'.}
+}
 }
 \examples{
 x <- seq(-10,10,0.25)
@@ -60,8 +80,12 @@ y <- charCTS(x,1.5,1,1,1,1,0)
 
 }
 \references{
-Massing, T. (2023), 'Parametric Estimation of Tempered Stable Laws'
+Kim, Y. S.; Rachev, S. T.; Bianchi, M. L. & Fabozzi, F. J.(2010), 'Tempered
+stable and tempered infinitely divisible GARCH models',
+\doi{10.1016/j.jbankfin.2010.01.015}
 
 Kuechler, U. & Tappe, S. (2013), 'Tempered stable distributions and
 processes' \doi{10.1016/j.spa.2013.06.012}
+
+Massing, T. (2023), 'Parametric Estimation of Tempered Stable Laws'
 }

@@ -184,10 +184,19 @@ pTSS <- function(q, alpha = NULL, delta = NULL, lambda = NULL, theta = NULL,
 #' Generates \code{n} random numbers distributed according
 #' of the tempered stable subordinator distribution.
 #'
-#' \code{theta} denotes the parameter vector \code{(alpha, delta, lambda)}. Either provide the parameters
-#' \code{alpha}, \code{delta}, \code{lambda} individually OR provide \code{theta}.
-#' "AR" stands for the Acceptance-Rejection Method and "SR" for a truncated infinite shot
-#' noise series representation. "AR" is the standard method used.
+#' \code{theta} denotes the parameter vector \code{(alpha, delta, lambda)}.
+#' Either provide the parameters \code{alpha}, \code{delta}, \code{lambda}
+#' individually OR provide \code{theta}.
+#' "AR" stands for the Acceptance-Rejection Method and "SR" for a truncated
+#' infinite shot noise series representation. "TM" stands for Two Methods as
+#' two different methods are used depending on which will be faster. In this
+#' method the function [copula::retstable()] is called. "TM" is the standard
+#' method used.
+#'
+#' It is recommended to check the generated random numbers once for each
+#' distribution using the density function. If the random numbers are shifted,
+#' e.g. for the method "SR", it may be worthwhile to increase k.
+#'
 #' For more details, see references.
 #'
 #' @param n sample size (integer).
@@ -195,11 +204,12 @@ pTSS <- function(q, alpha = NULL, delta = NULL, lambda = NULL, theta = NULL,
 #' @param delta Scale parameter. A real number > 0.
 #' @param lambda Tempering parameter. A real number > 0.
 #' @param theta Parameters stacked as a vector.
-#' @param methodR A String. Either "AR" or "SR".
+#' @param methodR A String. Either "TM", "AR" or "SR".
 #' @param k integer: the level of truncation, if \code{methodR == "SR"}. 10000
 #' by default.
 #'
 #' @return Generates \code{n} random numbers.
+#' @seealso [copula::retstable()] as "TM" uses this function.
 #'
 #' @examples
 #' rTSS(100,0.5,1,1)
@@ -211,9 +221,12 @@ pTSS <- function(q, alpha = NULL, delta = NULL, lambda = NULL, theta = NULL,
 #' Kawai, R & Masuda, H (2011), 'On simulation of tempered stable random
 #' variates' \doi{10.1016/j.cam.2010.12.014}
 #'
+#' Hofert, M (2011), 'Sampling Exponentially Tilted Stable Distributions'
+#' \doi{10.1145/2043635.2043638}
+#'
 #' @export
 rTSS <- function(n, alpha = NULL, delta = NULL, lambda = NULL, theta = NULL,
-                   methodR = "AR", k = 10000) {
+                   methodR = "TM", k = 10000) {
     if ((missing(alpha) | missing(delta) | missing(lambda)) & is.null(theta))
       stop("No or not enough parameters supplied")
     theta0 <- c(alpha, delta, lambda)
@@ -229,6 +242,8 @@ rTSS <- function(n, alpha = NULL, delta = NULL, lambda = NULL, theta = NULL,
     stopifnot(0 < alpha, alpha < 1, 0 < delta, 0 < lambda)
     x <- switch(methodR,
                 AR = rTSS_AR(n = n, alpha = alpha, delta = delta,
+                             lambda = lambda),
+                TM = rTSS_TM(n = n, alpha, delta = delta,
                              lambda = lambda),
                 SR = rTSS_SR(n = n, alpha = alpha, delta = delta,
                              lambda = lambda, k = k))
@@ -262,6 +277,20 @@ rTSS_AR <- function(n, alpha, delta, lambda) {
 }
 
 # No export.
+rTSS_TM <- function(n, alpha, delta, lambda){
+
+  returnVector <- c()
+
+  V0 <- -delta*gamma(-alpha)
+
+  for(i in 1:n){
+    returnVector <- append(returnVector, copula::retstable(alpha,V0,lambda))
+  }
+
+  return(returnVector)
+}
+
+# No export.
 rTSS_SR <- function(n, alpha, delta, lambda, k) {
     base::replicate(n = n, rTSS_SR1(alpha = alpha, delta = delta,
                                     lambda = lambda, k = k))
@@ -277,6 +306,20 @@ rTSS_SR1 <- function(alpha, delta, lambda, k) {
     X <- cbind((alpha * parrivals/delta)^(-1/alpha), E1 * U^(1/alpha)/lambda)
     return(sum(apply(X, 1, FUN = min)))
 }
+
+#This is used for RDTS_SR. Due to Kim et al 2010 Tempered stable and tempered
+# infinitely divisible GARCH models
+rTSS_SR2 <- function(alpha, delta, lambda, k) {
+  parrivalslong <- cumsum(stats::rexp(k * 1.1))
+  parrivals <- parrivalslong[parrivalslong <= k]
+  E1 <- stats::rexp(length(parrivals))
+  U <- stats::runif(length(parrivals))
+  X <- cbind((alpha * parrivals/delta)^(-1/alpha), sqrt(2)*E1^(1/2) * U^(1/alpha)/lambda)
+  return(sum(apply(X, 1, FUN = min)))
+  #Only for testreasons this line would return similar results as rTSS_SR1
+  #return(sum(apply(X, 1, FUN = min))/(log(-gamma(-alpha))))
+}
+
 
 #' Quantile function of the tempered stable subordinator distribution
 #'
@@ -361,7 +404,8 @@ qTSS <- function(p, alpha = NULL, delta = NULL, lambda = NULL, theta = NULL,
 #'
 #' \code{theta} denotes the parameter vector \code{(alpha, deltap, deltam,
 #' lambdap, lambdam, mu)}. Either provide the parameters individually OR
-#' provide \code{theta}.
+#' provide \code{theta}. Characteristic function shown here is from Massing
+#' (2023).
 #' \deqn{\varphi_{CTS}(t;\theta):=
 #' E_{\theta}\left[
 #' \mathrm{e}^{\mathrm{i}tX}\right]=
@@ -373,6 +417,22 @@ qTSS <- function(p, alpha = NULL, delta = NULL, lambda = NULL, theta = NULL,
 #' \lambda_-^{\alpha-1}\right)
 #' \right)}
 #'
+#' \strong{Origin of functions}
+#' Since the parameterisation can be different for this
+#' characteristic function in different approaches, the respective approach can
+#' be selected with \code{functionOrigin}. For the estimation function
+#' \code{TemperedEstim} and therefore also the Monte Carlo function
+#' \code{TemperedEstim_Simulation} and the calculation of the density function
+#' \code{dMTS} only the approach of Massing (2023) can be selected. If you want
+#' to use the approach of Kim et al. (2010) for these functions, you have to
+#' clone the package from GitHub and adapt the functions accordingly.
+#' \describe{
+#'   \item{massing}{From Massing, T. (2023), 'Parametric Estimation of
+#'   Tempered Stable Laws'.}
+#'   \item{kim10}{From Kim et al. (2010) 'Tempered stable
+#'   and tempered infinitely divisible GARCH models'.}
+#' }
+#'
 #'
 #' @param t A vector of real numbers where the CF is evaluated.
 #' @param alpha Stability parameter. A real number between 0 and 2.
@@ -382,14 +442,19 @@ qTSS <- function(p, alpha = NULL, delta = NULL, lambda = NULL, theta = NULL,
 #' @param lambdam Tempering parameter for the left tail. A real number > 0.
 #' @param mu A location parameter, any real number.
 #' @param theta Parameters stacked as a vector.
+#' @param functionOrigin A string. Either "massing", or "kim10".
 #'
-#' @return The CF of the tempered stable subordinator distribution.
+#' @return The CF of the classical tempered stable distribution.
 #'
 #' @references
-#' Massing, T. (2023), 'Parametric Estimation of Tempered Stable Laws'
+#' Kim, Y. S.; Rachev, S. T.; Bianchi, M. L. & Fabozzi, F. J.(2010), 'Tempered
+#' stable and tempered infinitely divisible GARCH models',
+#' \doi{10.1016/j.jbankfin.2010.01.015}
 #'
 #' Kuechler, U. & Tappe, S. (2013), 'Tempered stable distributions and
 #' processes' \doi{10.1016/j.spa.2013.06.012}
+#'
+#' Massing, T. (2023), 'Parametric Estimation of Tempered Stable Laws'
 #'
 #' @examples
 #' x <- seq(-10,10,0.25)
@@ -397,7 +462,8 @@ qTSS <- function(p, alpha = NULL, delta = NULL, lambda = NULL, theta = NULL,
 #'
 #' @export
 charCTS <- function(t, alpha = NULL, deltap = NULL, deltam = NULL,
-                    lambdap = NULL, lambdam = NULL, mu = NULL, theta = NULL) {
+                    lambdap = NULL, lambdam = NULL, mu = NULL, theta = NULL,
+                    functionOrigin = "massing") {
     if ((missing(alpha) | missing(deltap) | missing(deltam) | missing(lambdap) |
          missing(lambdam) | missing(mu)) & is.null(theta))
       stop("No or not enough parameters supplied")
@@ -417,16 +483,28 @@ charCTS <- function(t, alpha = NULL, deltap = NULL, deltam = NULL,
     }
     stopifnot(0 < alpha, alpha < 2, 0 < deltap, 0 < deltam, 0 < lambdap, 0 <
                 lambdam)
-    return(exp(imagN * t * mu + deltap * gamma(-alpha) *
-                 ((lambdap - imagN * t)^alpha - lambdap^alpha + imagN * t *
-                    alpha * lambdap^(alpha - 1)) +
-                 deltam * gamma(-alpha) *
-                 ((lambdam + imagN * t)^alpha - lambdam^alpha - imagN * t *
-                    alpha * lambdam^(alpha - 1))))
 
+    if(functionOrigin == "kim10"){
+      return(exp(imagN * t * mu - imagN * t * gamma(1 - alpha) *
+                   (deltap*lambdap^(alpha-1) - deltam*lambdam^(alpha-1))
+                 + deltap * gamma(-alpha) *
+                   ((lambdap-imagN*t)^(alpha) - lambdap^(alpha))
+                 + deltam * gamma(-alpha) *
+                   ((lambdam+imagN*t)^(alpha) - lambdam^(alpha))
+      ))
+    }
+
+    else {
+      return(exp(imagN * t * mu + deltap * gamma(-alpha) *
+                   ((lambdap - imagN * t)^alpha - lambdap^alpha + imagN * t *
+                      alpha * lambdap^(alpha - 1)) +
+                   deltam * gamma(-alpha) *
+                   ((lambdam + imagN * t)^alpha - lambdam^alpha - imagN * t *
+                      alpha * lambdam^(alpha - 1))))
+    }
 }
 
-#' Density function of the classic tempered stable (CTS) distribution
+#' Density function of the classical tempered stable (CTS) distribution
 #'
 #' The probability density function (PDF) of the classical tempered stable
 #' distributions is not available in closed form.
@@ -458,6 +536,7 @@ charCTS <- function(t, alpha = NULL, deltap = NULL, deltam = NULL,
 #' by default.
 #' @param nf Pieces the transformation is divided in. Limited to power-of-two
 #' size. 2048 by default.
+#' @param ... Possibility to modify [charCTS()].
 #'
 #' @return As \code{x} is a numeric vector, the return value is also a numeric
 #' vector of densities.
@@ -473,7 +552,7 @@ charCTS <- function(t, alpha = NULL, deltap = NULL, deltam = NULL,
 #' @export
 dCTS <- function(x, alpha = NULL, deltap = NULL, deltam = NULL, lambdap = NULL,
                  lambdam = NULL, mu = NULL, theta = NULL, dens_method = "FFT",
-                 a = -20, b = 20, nf = 2048) {
+                 a = -20, b = 20, nf = 2048, ...) {
     if ((missing(alpha) | missing(deltap) | missing(deltam) | missing(lambdap) |
          missing(lambdam) | missing(mu)) & is.null(theta))
       stop("No or not enough parameters supplied")
@@ -495,39 +574,15 @@ dCTS <- function(x, alpha = NULL, deltap = NULL, deltam = NULL, lambdap = NULL,
                 lambdam)
 
     if (dens_method == "FFT" || .Platform$OS.type != "windows") {
-        d <- sapply(x, dCTS_FFT, alpha = alpha, deltap = deltap,
-                    deltam = deltam, lambdap = lambdap, lambdam = lambdam,
-                    mu = mu, a = a, b = b, nf = nf)
+        d <- sapply(x, d_FFT, charFunc = charCTS,
+                    theta = c(alpha, deltap, deltam, lambdap, lambdam, mu),
+                    a = a, b = b, nf = nf, ...)
     } else {
         d <- sapply(x, dCTS_Conv, alpha = alpha, deltap = deltap,
                     deltam = deltam, lambdap = lambdap, lambdam = lambdam,
                     mu = mu)
     }
     return(d)
-}
-
-
-# No export.
-dCTS_FFT <- function(x, alpha, deltap, deltam, lambdap, lambdam,
-                          mu, a, b, nf) {
-    dx <- ((b - a)/nf)
-    dt <- (2 * pi/(nf * dx))
-
-    sq <- seq(from = 0, to = nf - 1, 1)
-    t <- (-nf/2 * dt + sq * dt)
-    xgrid <- (a + dx * sq)
-
-    cft <- charCTS(t, alpha, deltap, deltam, lambdap, lambdam, mu)
-
-    tX <- (exp(-imagN * sq * dt * a) * cft)
-
-    # fast Fourier transform
-    y <- stats::fft(tX, inverse = FALSE)
-
-    densityW <- Re((dt/(2 * pi)) * exp(-imagN * (nf/2 * dt) * xgrid) * y)
-
-    return (as.numeric(stats::approx(xgrid, densityW, xout=x,
-                              yleft = 1e-18, yright = 1e-18)[2]))
 }
 
 # No export.
@@ -559,10 +614,10 @@ dCTS_Conv <- function(x, alpha, deltap, deltam, lambdap, lambdam, mu) {
 
 }
 
-#' Cumulative probability function of the classic tempered stable (CTS)
+#' Cumulative probability function of the classical tempered stable (CTS)
 #' distribution
 #'
-#' The cumulative probability distribution function (CDF) of the classic
+#' The cumulative probability distribution function (CDF) of the classical
 #' tempered stable distribution.
 #'
 #' \code{theta} denotes the parameter vector \code{(alpha, deltap, deltam,
@@ -640,15 +695,24 @@ pCTS <- function(q, alpha = NULL, deltap = NULL, deltam = NULL, lambdap = NULL,
 
 #' Function to generate random variates of CTS distribution.
 #'
-#' Generates \code{n} random numbers distributed according to the classic
+#' Generates \code{n} random numbers distributed according to the classical
 #' tempered stable (CTS) distribution.
 #'
 #' \code{theta} denotes the parameter vector \code{(alpha, deltap, deltam,
 #' lambdap, lambdam, mu)}. Either provide the parameters individually OR
 #' provide \code{theta}.
 #' "AR" stands for the approximate Acceptance-Rejection Method and "SR" for a
-#' truncated infinite shot noise series representation. "AR" is the standard
-#' method used.
+#' truncated infinite shot noise series representation. "TM" stands for Two
+#' Methods as two different methods are used depending on which will be faster.
+#' "TM" works only for \code{alpha < 1}.
+#' In this method the function [copula::retstable()] is called. For
+#' \code{alpha < 1}, "TM" is the default method, while "AR" for \code{alpha > 1}
+#' is the default method.
+#'
+#' It is recommended to check the generated random numbers once for each
+#' distribution using the density function. If the random numbers are shifted,
+#' e.g. for the method "SR", it may be worthwhile to increase k.
+#'
 #' For more details, see references.
 #'
 #' @param n sample size (integer).
@@ -659,13 +723,15 @@ pCTS <- function(q, alpha = NULL, deltap = NULL, deltam = NULL, lambdap = NULL,
 #' @param lambdam Tempering parameter for the left tail. A real number > 0.
 #' @param mu A location parameter, any real number.
 #' @param theta Parameters stacked as a vector.
-#' @param methodR A String. Either "AR" or "SR".
+#' @param methodR A String. Either "TM","AR" or "SR".
 #' @param k integer: the level of truncation, if \code{methodR == "SR"}. 10000
 #' by default.
 #' @param c A real number. Only relevant for \code{methodR == "AR"}.
 #' 1 by default.
 #'
-#' @return Generates \code{n} random numbers.
+#' @return Generates \code{n} random numbers of the CTS distribution.
+#'
+#' @seealso [copula::retstable()] as "TM" uses this function.
 #'
 #' @references
 #' Massing, T. (2023), 'Parametric Estimation of Tempered Stable Laws'
@@ -673,13 +739,16 @@ pCTS <- function(q, alpha = NULL, deltap = NULL, deltam = NULL, lambdap = NULL,
 #' Kawai, R & Masuda, H (2011), 'On simulation of tempered stable random
 #' variates' \doi{10.1016/j.cam.2010.12.014}
 #'
+#' Hofert, M (2011), 'Sampling Exponentially Tilted Stable Distributions'
+#' \doi{10.1145/2043635.2043638}
+#'
 #' @examples
 #' rCTS(10,0.5,1,1,1,1,1,NULL,"SR",10)
 #' rCTS(10,0.5,1,1,1,1,1,NULL,"aAR")
 #'
 #' @export
 rCTS <- function(n, alpha = NULL, deltap = NULL, deltam = NULL, lambdap = NULL,
-                 lambdam = NULL, mu = NULL, theta = NULL, methodR = "AR",
+                 lambdam = NULL, mu = NULL, theta = NULL, methodR = "TM",
                  k = 10000, c = 1) {
     if ((missing(alpha) | missing(deltap) | missing(deltam) | missing(lambdap) |
          missing(lambdam) | missing(mu)) & is.null(theta))
@@ -701,13 +770,22 @@ rCTS <- function(n, alpha = NULL, deltap = NULL, deltam = NULL, lambdap = NULL,
     stopifnot(0 < alpha, alpha < 2, 0 < deltap, 0 < deltam, 0 < lambdap, 0 <
                 lambdam)
 
+
+    if(methodR == "TM" && alpha > 1){
+      methodR <- "AR"
+    }
+
+
     x <- switch(methodR,
                 AR = rCTS_aAR(n = n, alpha = alpha, deltap = deltap,
                                        deltam = deltam, lambdap = lambdap,
                                        lambdam = lambdam, mu = mu, c = c),
                 SR = rCTS_SR(n = n, alpha = alpha, deltap = deltap,
                              deltam = deltam, lambdap = lambdap,
-                             lambdam = lambdam, mu = mu, k = k))
+                             lambdam = lambdam, mu = mu, k = k),
+                TM = rCTS_TM(n = n, alpha = alpha, deltap = deltap,
+                              deltam = deltam, lambdap = lambdap,
+                              lambdam = lambdam, mu = mu))
     return(x)
 }
 
@@ -745,7 +823,15 @@ rCTS_aARp <- function(n, alpha, delta, lambda, c) {
     }
 
     return(returnVector)
+}
 
+#No export.
+rCTS_TM <- function(n, alpha, deltap, deltam, lambdap, lambdam, mu) {
+  return(mu +
+           (rTSS_TM(n, alpha = alpha, delta = deltap, lambda = lambdap)
+            + deltap * gamma(-alpha) * alpha * lambdap^(alpha-1)) -
+           (rTSS_TM(n, alpha = alpha, delta = deltam, lambda = lambdam)
+            + deltam * gamma(-alpha) * alpha * lambdam^(alpha-1)))
 }
 
 # No export.
@@ -783,9 +869,9 @@ rCTS_SRp <- function(alpha, delta, lambda, k) {
     return(x)
 }
 
-#' Quantile function of the classic tempered stable (CTS)
+#' Quantile function of the classical tempered stable (CTS)
 #'
-#' The quantile function of the classic tempered stable (CTS).
+#' The quantile function of the classical tempered stable (CTS).
 #'
 #' \code{theta} denotes the parameter vector \code{(alpha, deltap, deltam,
 #' lambdap, lambdam, mu)}. Either provide the parameters individually OR
@@ -892,8 +978,9 @@ qCTS <- function(p, alpha = NULL, deltap = NULL, deltam = NULL, lambdap = NULL,
 #' @references
 #' Massing, T. (2022), 'Parametric Estimation of Tempered Stable Laws'
 #'
-#' Rachev, S., Kim, Y., Bianchi, M. & Fabozzi, F. (2011), 'Financial Models with
-#' Levy Processes and Volatility Clustering' \doi{10.1002/9781118268070}
+#' Rachev, Svetlozar T. & Kim, Young Shin & Bianchi, Michele L. & Fabozzi,
+#' Frank J. (2011) 'Financial models with Lévy processes and volatility
+#' clustering' \doi{10.1002/9781118268070}
 #'
 #' @examples
 #' x <- seq(-10,10,0.25)
@@ -984,29 +1071,10 @@ dNTS <- function(x, alpha = NULL, beta = NULL, delta = NULL, lambda = NULL,
     }
     stopifnot(0 < alpha, alpha < 1, 0 < delta, 0 < lambda)
 
-    d <- sapply(x, dNTS_FFT, alpha = alpha , beta = beta, delta = delta,
-                lambda = lambda, mu = mu, a = a, b = b , nf = nf)
+    d <- sapply(x, d_FFT, charFunc = charNTS,
+                theta = c(alpha, beta, delta,lambda, mu),
+                a = a, b = b , nf = nf)
     return(d)
-}
-
-
-# No export
-dNTS_FFT <- function(x, alpha, beta, delta, lambda, mu, a, b, nf) {
-    dx <- ((b - a)/nf)
-    dt <- (2 * pi/(nf * dx))
-    sq <- seq(from = 0, to = nf - 1, 1)
-    t <- (-nf/2 * dt + sq * dt)
-    xgrid <- (a + dx * sq)
-
-    cft <- charNTS(t, alpha, beta, delta, lambda, mu)
-
-    tX <- (exp(-(1i) * sq * dt * a) * cft)
-
-    y <- stats::fft(tX, inverse = FALSE)
-
-    densityW <- Re((dt/(2 * pi)) * exp(-(1i) * (nf/2 * dt) * xgrid) * y)
-    return (as.numeric(stats::approx(xgrid, densityW, xout=x,
-                              yleft = 1e-18, yright = 1e-18)[2]))
 }
 
 #' Cumulative probability function of the normal tempered stable (NTS)
@@ -1092,7 +1160,14 @@ pNTS <- function(q, alpha = NULL, beta = NULL, delta = NULL, lambda = NULL,
 #' parameter is for the method of simulating the TSS random variable, see the
 #' [rTSS()] function.
 #' "AR" stands for the Acceptance-Rejection Method and "SR" for a truncated
-#' infinite shot noise series representation. "AR" is the standard method used.
+#' infinite shot noise series representation. "TM" stands for Two Methods as
+#' two different methods are used depending on which will be faster. In this
+#' method the function [copula::retstable()] is called. "TM" is the standard
+#' method used. For more details, see references.
+#'
+#' It is recommended to check the generated random numbers once for each
+#' distribution using the density function. If the random numbers are shifted,
+#' e.g. for the method "SR", it may be worthwhile to increase k.
 #'
 #' For more details, see references.
 #'
@@ -1103,7 +1178,7 @@ pNTS <- function(q, alpha = NULL, beta = NULL, delta = NULL, lambda = NULL,
 #' @param lambda A  real number > 0.
 #' @param mu A location parameter, any real number.
 #' @param theta A vector of all other arguments.
-#' @param methodR A String. Either "AR" or "SR". "AR" by default.
+#' @param methodR A String. Either "TM","AR" or "SR". "TM" by default.
 #' @param k integer: the number of replications, if \code{methodR == "SR"}. 10000
 #' by default.
 #'
@@ -1111,12 +1186,16 @@ pNTS <- function(q, alpha = NULL, beta = NULL, delta = NULL, lambda = NULL,
 #'
 #' @seealso
 #' See also the [rTSS()] function.
+#' [copula::retstable()] as "TM" uses this function.
 #'
 #' @references
 #' Massing, T. (2023), 'Parametric Estimation of Tempered Stable Laws'
 #'
 #' Kawai, R & Masuda, H (2011), 'On simulation of tempered stable random
 #' variates' \doi{10.1016/j.cam.2010.12.014}
+#'
+#' Hofert, M (2011), 'Sampling Exponentially Tilted Stable Distributions'
+#' \doi{10.1145/2043635.2043638}
 #'
 #' @examples
 #' rNTS(100, 0.5, 1,1,1,1)
@@ -1125,7 +1204,7 @@ pNTS <- function(q, alpha = NULL, beta = NULL, delta = NULL, lambda = NULL,
 #'
 #' @export
 rNTS <- function(n, alpha = NULL, beta = NULL, delta = NULL, lambda = NULL,
-                 mu = NULL, theta = NULL, methodR = "AR", k = 10000) {
+                 mu = NULL, theta = NULL, methodR = "TM", k = 10000) {
     if ((missing(alpha) | missing(beta) | missing(delta) | missing(lambda) |
          missing(mu)) & is.null(theta))
       stop("No or not enough parameters supplied")
@@ -1147,7 +1226,9 @@ rNTS <- function(n, alpha = NULL, beta = NULL, delta = NULL, lambda = NULL,
                 AR = rNTS_AR(n = n, alpha = alpha, beta = beta,
                              delta = delta, lambda = lambda, mu = mu),
                 SR = rNTS_SR(n = n, alpha = alpha, beta = beta, delta = delta,
-                             lambda = lambda, mu = mu, k = k))
+                             lambda = lambda, mu = mu, k = k),
+                TM = rNTS_TM(n = n, alpha = alpha, beta = beta,
+                             delta = delta, lambda = lambda, mu = mu))
     return(x)
 }
 
@@ -1159,6 +1240,12 @@ rNTS_AR <- function(n, alpha, beta, delta, lambda, mu) {
     return(x)
 }
 
+# No export.
+rNTS_TM <- function(n, alpha, beta, delta, lambda, mu) {
+  z <- stats::rnorm(n = n)
+  y <- rTSS_TM(n, alpha = alpha, delta = delta, lambda = lambda)
+  return(mu + sqrt(y)*z + beta * y)
+}
 
 # No export.
 rNTS_SR <- function(n, alpha, beta, delta, lambda, mu, k) {
@@ -1170,7 +1257,7 @@ rNTS_SR <- function(n, alpha, beta, delta, lambda, mu, k) {
 
 #' Quantile function of the normal tempered stable (NTS)
 #'
-#' The quantile function of the normal tempered stable (CTS).
+#' The quantile function of the normal tempered stable (NTS).
 #'
 #' \code{theta} denotes the parameter vector \code{(alpha, beta, delta, lambda,
 #' mu)}. Either provide the parameters individually OR provide \code{theta}.

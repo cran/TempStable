@@ -5,7 +5,7 @@
 \title{Estimation function}
 \usage{
 TemperedEstim(
-  TemperedType = c("Classic", "Subordinator", "Normal"),
+  TemperedType = c("CTS", "TSS", "NTS", "MTS", "GTS", "KRTS", "RDTS"),
   EstimMethod = c("ML", "GMM", "Cgmm", "GMC"),
   data,
   theta0 = NULL,
@@ -18,6 +18,7 @@ TemperedEstim(
   t_scheme = NULL,
   alphaReg = NULL,
   t_free = NULL,
+  nb_t = NULL,
   subdivisions = NULL,
   IntegrationMethod = NULL,
   randomIntegrationLaw = NULL,
@@ -29,7 +30,8 @@ TemperedEstim(
 )
 }
 \arguments{
-\item{TemperedType}{A String. Either "Classic", "Subordinator", or "Normal"}
+\item{TemperedType}{A String. Either "CTS", "TSS", "NTS", "MTS", "GTS",
+"KRTS", "RDTS".}
 
 \item{EstimMethod}{A String. Either "ML", "GMM", "Cgmm", or "GMC".}
 
@@ -53,33 +55,38 @@ continuous updated and the iterative GMM proposed by Hansen, Eaton et Yaron
 (1996) and adapted to the continuum case. For GMC: \code{"2SGMC", "CueGMC"}.
 For Cgmm: \code{"2SCgmm", "CueCgmm", ...}.}
 
-\item{regularization}{regularization scheme to be used for moment methods, one of
-\code{"Tikhonov"} (Tikhonov), \code{"LF"} (Landweber-Fridmann) and
+\item{regularization}{regularization scheme to be used for moment methods,
+one of \code{"Tikhonov"} (Tikhonov), \code{"LF"} (Landweber-Fridmann) and
 \code{"cut-off"} (spectral cut-off).}
 
 \item{WeightingMatrix}{type of weighting matrix used to compute the
-objective function for the GMM and GMC methods, one of \code{"OptAsym"} (the optimal asymptotic),
-\code{"DataVar"} (the data driven, only for GMM) and \code{"Id"} (the identity matrix).}
+objective function for the GMM and GMC methods, one of \code{"OptAsym"} (the
+optimal asymptotic), \code{"DataVar"} (the data driven, only for GMM) and
+\code{"Id"} (the identity matrix).}
 
-\item{t_scheme}{scheme used to select the points for the GMM method where the moment conditions
-are evaluated, one of \code{"equally"} (equally placed), \code{"NonOptAr"}
-(non optimal arithmetic placement), \code{"uniformOpt"}
+\item{t_scheme}{scheme used to select the points for the GMM method where the
+moment conditions are evaluated, one of \code{"equally"} (equally placed),
+\code{"NonOptAr"} (non optimal arithmetic placement), \code{"uniformOpt"}
 (uniform optimal placement), \code{"ArithOpt"} (arithmetic optimal
 placement), \code{"Var Opt"} (optimal variance placement) and \code{"free"}
 (users need to pass their own set of points in ...).}
 
-\item{alphaReg}{value of the regularisation parameter; numeric. Example Value could be ==0.01.}
+\item{alphaReg}{value of the regularisation parameter; numeric. Example Value
+could be ==0.01.}
 
 \item{t_free}{sequence, if \code{t_scheme=="free"}.}
 
+\item{nb_t}{integer, if you set \code{t_scheme <- "equally"}. nb_t could be
+== 20 for example.}
+
 \item{subdivisions}{Number of subdivisions used to compute the different
-integrals involved in the computation of the objective function for the Cgmm method (to
-minimise); numeric.}
+integrals involved in the computation of the objective function for the Cgmm
+method (to minimise); numeric.}
 
 \item{IntegrationMethod}{Numerical integration method to be used to
-approximate the (vectorial) integrals for the Cgmm method. Users can choose between "Uniform"
-discretization or the "Simpson"'s rule (the 3-point Newton-Cotes quadrature
-rule).}
+approximate the (vectorial) integrals for the Cgmm method. Users can choose
+between "Uniform" discretization or the "Simpson"'s rule (the 3-point
+Newton-Cotes quadrature rule).}
 
 \item{randomIntegrationLaw}{Probability measure associated to the Hilbert
 space spanned by the moment conditions for the Cgmm method.}
@@ -87,8 +94,8 @@ space spanned by the moment conditions for the Cgmm method.}
 \item{s_min, s_max}{Lower and Upper bounds of the interval where the moment
 conditions are considered for the Cgmm method; numeric.}
 
-\item{ncond}{Integer. Number of moment conditions (until order \code{ncond}) for the GMC method.
-Must not be less than 3 for TSS, 6 for CTS, 5 for NTS.}
+\item{ncond}{Integer. Number of moment conditions (until order \code{ncond})
+for the GMC method. Must not be less than 3 for TSS, 6 for CTS, 5 for NTS.}
 
 \item{IterationControl}{only used if algo = "IT..." or algo = "Cue..."
 to control the iterations. See Details.}
@@ -100,21 +107,37 @@ asymptotic confidence level.}
 Object of a estim-class. See details for more information.
 }
 \description{
-Main estimation function for the tempered stable subordinator distribution
-(TSS), the classical tempered stable distribution (CTS), and the normal
-tempered stable distribution (NTS). It allows the user to select the
+Main estimation function for the tempered stabled distributions
+offered within this package. It allows the user to select the
 preferred estimation method and several related options.
 }
 \details{
 \strong{TemperedType} Detailed documentation of the individual tempered
 stable distributions can be viewed in the respective characteristic function.
-Use \code{\link[=charTSS]{charTSS()}}, \code{\link[=charCTS]{charCTS()}}, or \code{\link[=charNTS]{charNTS()}}.
+With the parameter 'TemperedTyp' you can choose the tempered stable
+distribution you want to use. Here is a list of distribution you can choose
+from:
+\describe{
+\item{TSS}{Tempered stabel subordinator: See \code{\link[=charTSS]{charTSS()}} for details.}
+\item{CTS}{Classical tempered stable distribution: See \code{\link[=charCTS]{charCTS()}} for
+details.}
+\item{GTS}{Generalized classical tempered stable distribution: See
+\code{\link[=charGTS]{charGTS()}} for details.}
+\item{NTS}{Normal tempered stable distribution: See \code{\link[=charNTS]{charNTS()}} for
+details.}
+\item{MTS}{Modified tempered stable distribution: See \code{\link[=charMTS]{charMTS()}} for
+details.}
+\item{RDTS}{Rapid decreasing tempered stable distribution: See \code{\link[=charRDTS]{charRDTS()}}
+for details.}
+\item{KRTS}{Kim-Rachev tempered stable distribution: See \code{\link[=charKRTS]{charKRTS()}} for
+details.}
+}
 
 \strong{Estimfct} Additional parameters are needed for different estimation
 functions. These are listed below for each function. The list of additional
 parameters starts after the parameter \code{eps} in the parameter list.
 \describe{
-\item{For ML:}{ See usage of Maximum likelihood estimation in Kim et al.
+\item{For ML:}{See usage of Maximum likelihood estimation in Kim et al.
 (2008). No additional parameters are needed.}
 \item{For GMM:}{Generalized Method of Moments by Feuerverger (1981).
 The parameters \code{algo, alphaReg, regularization, WeightingMatrix, and
@@ -206,18 +229,18 @@ documentation can be found in their documentation.
 }
 \examples{
 \donttest{
-TemperedEstim(TemperedType = "Classic", EstimMethod = "ML",
+TemperedEstim(TemperedType = "CTS", EstimMethod = "ML",
                data = rCTS(2,1.5,1,1,1,1,0),
                theta0 = c(1.5,1,1,1,1,0) - 0.1);
-TemperedEstim("Subordinator", "GMM", rTSS(20,0.5,1,1), algo = "2SGMM",
+TemperedEstim("TSS", "GMM", rTSS(20,0.5,1,1), algo = "2SGMM",
               alphaReg = 0.01, regularization = "cut-off",
               WeightingMatrix = "OptAsym", t_scheme = "free",
               t_free = seq(0.1,2,length.out = 12));
-TemperedEstim("Normal", "Cgmm", rNTS(20,0.5,1,1,1,0), algo = "2SCgmm",
+TemperedEstim("NTS", "Cgmm", rNTS(20,0.5,1,1,1,0), algo = "2SCgmm",
               alphaReg = 0.01, subdivisions = 50,
               IntegrationMethod = "Uniform", randomIntegrationLaw = "unif",
               s_min = 0, s_max= 1);
-TemperedEstim("Subordinator", "GMC", rTSS(20, 0.5, 1, 1), algo = "2SGMC",
+TemperedEstim("TSS", "GMC", rTSS(20, 0.5, 1, 1), algo = "2SGMC",
               alphaReg = 0.01, WeightingMatrix = "OptAsym",
               regularization = "cut-off", ncond = 8, theta0 = c(0.5,1,1));
 }
@@ -226,7 +249,7 @@ TemperedEstim("Subordinator", "GMC", rTSS(20, 0.5, 1, 1), algo = "2SGMC",
 Massing, T. (2023), 'Parametric Estimation of Tempered Stable Laws'
 
 Kim, Y. s., Rachev, S. T., Bianchi, M. L. & Fabozzi, F. J. (2008), 'Financial
-market models with lévy processes and time-varying volatility'
+market models with levy processes and time-varying volatility'
 \doi{10.1016/j.jbankfin.2007.11.004}
 
 Hansen, L. P. (1982), 'Large sample properties of generalized method of

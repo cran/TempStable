@@ -10,7 +10,7 @@ rTSS(
   delta = NULL,
   lambda = NULL,
   theta = NULL,
-  methodR = "AR",
+  methodR = "TM",
   k = 10000
 )
 }
@@ -25,7 +25,7 @@ rTSS(
 
 \item{theta}{Parameters stacked as a vector.}
 
-\item{methodR}{A String. Either "AR" or "SR".}
+\item{methodR}{A String. Either "TM", "AR" or "SR".}
 
 \item{k}{integer: the level of truncation, if \code{methodR == "SR"}. 10000
 by default.}
@@ -38,10 +38,19 @@ Generates \code{n} random numbers distributed according
 of the tempered stable subordinator distribution.
 }
 \details{
-\code{theta} denotes the parameter vector \code{(alpha, delta, lambda)}. Either provide the parameters
-\code{alpha}, \code{delta}, \code{lambda} individually OR provide \code{theta}.
-"AR" stands for the Acceptance-Rejection Method and "SR" for a truncated infinite shot
-noise series representation. "AR" is the standard method used.
+\code{theta} denotes the parameter vector \code{(alpha, delta, lambda)}.
+Either provide the parameters \code{alpha}, \code{delta}, \code{lambda}
+individually OR provide \code{theta}.
+"AR" stands for the Acceptance-Rejection Method and "SR" for a truncated
+infinite shot noise series representation. "TM" stands for Two Methods as
+two different methods are used depending on which will be faster. In this
+method the function \code{\link[copula:retstable]{copula::retstable()}} is called. "TM" is the standard
+method used.
+
+It is recommended to check the generated random numbers once for each
+distribution using the density function. If the random numbers are shifted,
+e.g. for the method "SR", it may be worthwhile to increase k.
+
 For more details, see references.
 }
 \examples{
@@ -54,4 +63,10 @@ Massing, T. (2023), 'Parametric Estimation of Tempered Stable Laws'
 
 Kawai, R & Masuda, H (2011), 'On simulation of tempered stable random
 variates' \doi{10.1016/j.cam.2010.12.014}
+
+Hofert, M (2011), 'Sampling Exponentially Tilted Stable Distributions'
+\doi{10.1145/2043635.2043638}
+}
+\seealso{
+\code{\link[copula:retstable]{copula::retstable()}} as "TM" uses this function.
 }
