@@ -1,3 +1,15 @@
+# TempStable 0.2.2
+
+## Breaking changes
+
+* Package moved on GitHub from cedricjuessen to TMoek
+
+## Minor improvements and fixes 
+
+* @aliases TempStable-package added in documentation
+
+* Fisher Information for TSS patched
+
 # TempStable 0.2.0
 
 ## New features

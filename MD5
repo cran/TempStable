@@ -1,6 +1,6 @@
-0ebe41b4de849cad68f87c811480daf8 *DESCRIPTION
+9461be3ef84bf5f727f3efb01e003360 *DESCRIPTION
 568efcd8131c7751ee25971e2f260c9d *NAMESPACE
-c34080ccd324b48441be27e8790b8d12 *NEWS.md
+17248b64087dae18a283ad924c1d7269 *NEWS.md
 d5aed5b9b5168b7dce30e316b78e4623 *R/CGMM_CGMY.R
 c63fbd197f4fa7fd82694993430fd1eb *R/CGMM_CTS.R
 9069f8726b3e7f90e5d75e323b14f3c8 *R/CGMM_GTS.R
@@ -39,7 +39,7 @@ b238cb1782eb99732ea14ea142543d79 *R/MasterEstim.R
 80859e6d84d508c06f62305de4b72504 *R/MethodOfCumulants_RDTS.R
 09d17bfcc469956f6d16766c478c00a9 *R/MethodOfCumulants_TSS.R
 965c539378fea50ffb0ca602eaf95e06 *R/MonteCarloFunction.R
-37d98a53ceb31677bd48d4e1ed0716e5 *R/TempStable.R
+bc993a93ec88d62bf459916bc7fbe9a1 *R/TempStable.R
 4429f1ee13ed11083123acfd6f366933 *R/asympVarianceEstim_CGMY.R
 4174d7a058b105543cba077fa59675aa *R/asympVarianceEstim_CTS.R
 08ebb104d0ee8ea33c6c75e704253b34 *R/asympVarianceEstim_GTS.R
@@ -47,17 +47,13 @@ b8523df562175d908f669ad588f6a9df *R/asympVarianceEstim_KRTS.R
 ba1e54d72b765eee8d2ef3507e3148a3 *R/asympVarianceEstim_MTS.R
 6b3782502292cbd3bc534a6a24f6d089 *R/asympVarianceEstim_NTS.R
 0ca654bd3e1f761f5ea36bc9f387cf32 *R/asympVarianceEstim_RDTS.R
-7e2bc8285d1e6588ece5872c278505e1 *R/asympVarianceEstim_TSS.R
+d2584105cce297a315893c7d98b74ba8 *R/asympVarianceEstim_TSS.R
 2143d9d52b0d926725097673082ec7ba *R/basicfcts_TS.R
 12e61012032675aeb395c874a92cde5c *R/basicfcts_TS_extended.R
-a7b0bcff22420b4f12226c762856a190 *README.md
-afbe4209b3bb961ba3e41cbfe79ea507 *build/partial.rdb
-c32019619d4c404e0b042ec8bcddfb3f *build/vignette.rds
-070d5747d302f77cca17df934112ab2a *inst/doc/my-vignette.R
-abe3d1dd2dd48a73884dc7c6b57633c0 *inst/doc/my-vignette.Rmd
-b821d2da5f645027b869d5e3eefa2d55 *inst/doc/my-vignette.html
+f9268d041653258363e4406784baf0c4 *README.md
+f01682ffd9d5582c0d3b8a226f3c2b16 *build/partial.rdb
 7df3870bef3ea82bd4206f972e1d69b6 *inst/logo/logo.R
-3ebba9f1327fd957014d979b83b21c1d *man/TempStable.Rd
+0c41886fcdfcdc867ed627dd6819c8ef *man/TempStable.Rd
 5a5c433750a9b6c3a828011d38c16202 *man/TemperedEstim.Rd
 3c98e6ebbb4c4c0894a2499c01122121 *man/TemperedEstim_Simulation.Rd
 e2ea2328aa4ed203eaacebda87d831c4 *man/charCTS.Rd
@@ -98,4 +94,3 @@ c43591c6389e0aa10a4c80a9dace0747 *tests/testthat/test_MasterEstim.R
 133a28d322aa4fe6c090e691e569fae1 *tests/testthat/test_MonteCarloFunction.R
 704ad7a2563b666b2fbbd2e42cade5bc *tests/testthat/test_MonteCarloFunctionDifAlgo.R
 6e731786724263584f45e59e9c66711d *tests/testthat/test_basicfcts_ts.R
-abe3d1dd2dd48a73884dc7c6b57633c0 *vignettes/my-vignette.Rmd

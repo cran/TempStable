@@ -2,16 +2,13 @@ Package: TempStable
 Type: Package
 Title: A Collection of Methods to Estimate Parameters of Different
         Tempered Stable Distributions
-Version: 0.2.0
+Version: 0.2.2
 Authors@R: c( person(given = "Till", family = "Massing",
                      email = "till.massing@uni-due.de",
-                     role = "aut"),
+                     role = c("cre","aut")),
               person(given = "Cedric Maximilian", family = "Juessen", 
                      email = "cedric.juessen@vwl.uni-due.de",
-                     role = c("cre","aut")),
-              person(given = "Mert", family = "Basaran",
-                     email = "mert.basaran@vwl.uni-due.de",
-                     role = "ctb"))
+                     role = "aut"))
 Description: 
   A collection of methods to estimate parameters of different tempered stable 
   distributions (TSD). Currently, there are seven different tempered stable 
@@ -38,7 +35,7 @@ Description:
   Kim et al. (2010) <doi:10.1016/j.jbankfin.2010.01.015>
   Kuechler & Tappe (2013) <doi:10.1016/j.spa.2013.06.012>
   Rachev et al. (2011) <doi:10.1002/9781118268070>.
-URL: https://cedricjuessen.github.io/TempStable/
+URL: https://github.com/TMoek/TempStable
 License: GPL (>= 2)
 Encoding: UTF-8
 Depends: R (>= 4.2), methods
@@ -49,13 +46,12 @@ Imports: copula (>= 1.1-2), doParallel (>= 1.0.12), foreach (>= 1.5.0),
 RoxygenNote: 7.2.3
 Suggests: knitr (>= 1.4), rmarkdown (>= 2.17), testthat (>= 3.1), V8
         (>= 4.2)
-VignetteBuilder: knitr
 Config/testthat/edition: 3
+BugReports: https://github.com/TMoek/TempStable/issues
 NeedsCompilation: no
-Packaged: 2023-07-08 12:01:08 UTC; Cedric
-Author: Till Massing [aut],
-  Cedric Maximilian Juessen [cre, aut],
-  Mert Basaran [ctb]
-Maintainer: Cedric Maximilian Juessen <cedric.juessen@vwl.uni-due.de>
+Packaged: 2023-10-24 11:14:12 UTC; till.massing
+Author: Till Massing [cre, aut],
+  Cedric Maximilian Juessen [aut]
+Maintainer: Till Massing <till.massing@uni-due.de>
 Repository: CRAN
-Date/Publication: 2023-07-08 12:30:02 UTC
+Date/Publication: 2023-10-24 13:40:13 UTC
